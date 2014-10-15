@@ -1,0 +1,58 @@
+{
+    "appKeys": {
+        "utc_offset": 0
+    },
+    "capabilities": [
+        ""
+    ],
+    "companyName": "shin@wolverion.com",
+    "longName": ".beat",
+    "projectType": "native",
+    "resources": {
+        "media": [
+            {
+                "file": "images/beat.png",
+                "menuIcon": true,
+                "name": "ICON_IMAGE",
+                "type": "png"
+            },
+            {
+                "characterRegex": "[0-9@]",
+                "file": "fonts/FugazOne-Regular.ttf",
+                "name": "FONT_SWATCH_BEATS_46",
+                "type": "font"
+            },
+            {
+                "characterRegex": "[0-9+-]",
+                "file": "fonts/SourceCodePro-Regular.ttf",
+                "name": "FONT_TZ_OFFSET_20",
+                "type": "font"
+            },
+            {
+                "characterRegex": "[0-9]",
+                "file": "fonts/SourceCodePro-Regular.ttf",
+                "name": "FONT_UNIX_TIME_23",
+                "type": "font"
+            },
+            {
+                "characterRegex": "[0-9:]",
+                "file": "fonts/DroidSans.ttf",
+                "name": "FONT_ISO_TIME_31",
+                "type": "font"
+            },
+            {
+                "characterRegex": "[0-9-]",
+                "file": "fonts/DroidSans.ttf",
+                "name": "FONT_ISO_DATE_23",
+                "type": "font"
+            }
+        ]
+    },
+    "shortName": ".beat",
+    "uuid": "4faf33ff-8a93-4626-a6c4-169f5b7647f7",
+    "versionCode": 1,
+    "versionLabel": "1.0",
+    "watchapp": {
+        "watchface": true
+    }
+}
