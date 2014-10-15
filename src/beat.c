@@ -131,7 +131,7 @@ void display_time(struct tm *tick_time) {
     // Static, because we pass them to the system.
     static char date_text[] = "9999-99-99";
     static char time_text[] = "99:99:99";
-    static char beat_text[] = "@1000";
+    static char beat_text[] = "@999";
 
     time_t unix_seconds;
 
@@ -154,7 +154,20 @@ void display_time(struct tm *tick_time) {
 
     // Swatch .beats.
 
-    snprintf(beat_text, sizeof(beat_text), "@%ld", calc_swatch_beats(unix_seconds));
+    snprintf(beat_text, sizeof(beat_text), "@%0ld", calc_swatch_beats(unix_seconds));
+    if (beat_text[3] == '\0') {
+        beat_text[4] = '\0';
+        beat_text[3] = beat_text[2];
+        beat_text[2] = beat_text[1];
+        beat_text[1] = '0';
+    } else if (beat_text[2] == '\0') {
+        beat_text[4] = '\0';
+        beat_text[3] = beat_text[1];
+        beat_text[2] = '\0';
+        beat_text[1] = '0';
+    } else {
+        // do nothing
+    }
     text_layer_set_text(text_beat_layer, beat_text);
 }
 
