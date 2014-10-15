@@ -23,18 +23,6 @@
                 "type": "font"
             },
             {
-                "characterRegex": "[0-9+-]",
-                "file": "fonts/SourceCodePro-Regular.ttf",
-                "name": "FONT_TZ_OFFSET_20",
-                "type": "font"
-            },
-            {
-                "characterRegex": "[0-9]",
-                "file": "fonts/SourceCodePro-Regular.ttf",
-                "name": "FONT_UNIX_TIME_23",
-                "type": "font"
-            },
-            {
                 "characterRegex": "[0-9:]",
                 "file": "fonts/DroidSans.ttf",
                 "name": "FONT_ISO_TIME_31",
