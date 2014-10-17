@@ -29,43 +29,36 @@ static TextLayer *text_beat_layer;
 
 #define TEXT_FG_COLOR FOREGROUND_COLOR
 #define TEXT_BG_COLOR GColorClear
-#define BORDER_COLOR FOREGROUND_COLOR
 #define WINDOW_COLOR BACKGROUND_COLOR
 
 #ifdef LAYOUT_DEBUG
 #undef TEXT_FG_COLOR
 #undef TEXT_BG_COLOR
-#undef BORDER_COLOR
 #undef WINDOW_COLOR
 #define TEXT_FG_COLOR GColorWhite
 #define TEXT_BG_COLOR GColorBlack
-#define BORDER_COLOR GColorBlack
 #define WINDOW_COLOR GColorWhite
 #endif
 
 
 // Some layout constants so we can tweak things more easily.
 
-#define ISO_TOP 0
-#define ISO_HPADDING 4
-#define ISO_WDAY_HEIGHT 10
+#define ISO_TOP 10
+#define ISO_HPADDING 2
 #define ISO_DATE_HEIGHT 26
 #define ISO_TIME_HEIGHT 36
-#define ISO_BORDER_PADDING 12
 
 #define ISO_WIDTH (144 - 2 * ISO_HPADDING)
-#define ISO_HEIGHT (ISO_WDAY_HEIGHT + ISO_DATE_HEIGHT + ISO_TIME_HEIGHT + 2 * (ISO_HPADDING + 2))
+#define ISO_HEIGHT (ISO_DATE_HEIGHT + ISO_TIME_HEIGHT + 2 * (ISO_HPADDING + 2))
 #define ISO_TEXT_WIDTH (ISO_WIDTH - 2 * (ISO_HPADDING + 2))
 #define ISO_RECT GRect(ISO_HPADDING, ISO_TOP, ISO_WIDTH, ISO_HEIGHT)
-#define ISO_WDAY_TOP (ISO_TOP + ISO_HPADDING + 2)
-#define ISO_DATE_TOP (ISO_WDAY_TOP + ISO_WDAY_HEIGHT)
+#define ISO_DATE_TOP (ISO_TOP)
 #define ISO_TIME_TOP (ISO_DATE_TOP + ISO_DATE_HEIGHT)
-#define ISO_WDAY_RECT GRect(ISO_HPADDING + ISO_HPADDING + 2, ISO_WDAY_TOP, ISO_TEXT_WIDTH, ISO_WDAY_HEIGHT)
 #define ISO_DATE_RECT GRect(ISO_HPADDING + ISO_HPADDING + 2, ISO_DATE_TOP, ISO_TEXT_WIDTH, ISO_DATE_HEIGHT)
 #define ISO_TIME_RECT GRect(ISO_HPADDING + ISO_HPADDING + 2, ISO_TIME_TOP, ISO_TEXT_WIDTH, ISO_TIME_HEIGHT)
 
 #define BEAT_TOP 90
-#define BEAT_LEFT 0
+#define BEAT_LEFT 4
 #define BEAT_HEIGHT 64
 #define BEAT_WIDTH (144 - BEAT_LEFT)
 #define BEAT_RECT GRect(BEAT_LEFT, BEAT_TOP, BEAT_WIDTH, BEAT_HEIGHT)
@@ -75,6 +68,10 @@ static TextLayer *text_beat_layer;
 #define RLEFT(rect) (rect.origin.x)
 #define RRIGHT(rect) (rect.origin.x + rect.size.w)
 
+static const char month[12][4] = {
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+};
 
 void set_timezone_offset(char tz_offset[]) {
     int hour = 0;
@@ -94,9 +91,6 @@ void set_timezone_offset(char tz_offset[]) {
 
 void update_background_callback(Layer *layer, GContext *gctx) {
     (void) layer;
-
-    graphics_context_set_stroke_color(gctx, BORDER_COLOR);
-    graphics_context_set_fill_color(gctx, BORDER_COLOR);
 }
 
 
@@ -129,7 +123,7 @@ time_t calc_swatch_beats(time_t unix_seconds) {
 
 void display_time(struct tm *tick_time) {
     // Static, because we pass them to the system.
-    static char date_text[] = "9999-99-99";
+    static char date_text[] = "MMM/99";
     static char time_text[] = "99:99:99";
     static char beat_text[] = "@999";
 
@@ -137,7 +131,8 @@ void display_time(struct tm *tick_time) {
 
     // Date.
 
-    strftime(date_text, sizeof(date_text), "%Y-%m-%d", tick_time);
+    strcpy(date_text, month[tick_time->tm_mon]);
+    strftime(date_text+3, sizeof(date_text)-3, "/%d", tick_time);
     text_layer_set_text(text_date_layer, date_text);
 
     // Time.
@@ -274,8 +269,8 @@ static void window_load(Window *window) {
     layer_add_child(window_layer, background_layer);
 
     text_date_layer = init_text_layer(ISO_DATE_RECT, GTextAlignmentCenter, RESOURCE_ID_FONT_ISO_DATE_23);
-    text_time_layer = init_text_layer(ISO_TIME_RECT, GTextAlignmentCenter, RESOURCE_ID_FONT_ISO_TIME_31);
-    text_beat_layer = init_text_layer(BEAT_RECT, GTextAlignmentLeft, RESOURCE_ID_FONT_SWATCH_BEATS_46);
+    text_time_layer = init_text_layer(ISO_TIME_RECT, GTextAlignmentCenter, RESOURCE_ID_FONT_ISO_TIME_32);
+    text_beat_layer = init_text_layer(BEAT_RECT, GTextAlignmentLeft, RESOURCE_ID_FONT_SWATCH_BEATS_47);
 
     get_stored_timezone();
     time_t now = time(NULL);

@@ -19,19 +19,19 @@
             {
                 "characterRegex": "[0-9@]",
                 "file": "fonts/FugazOne-Regular.ttf",
-                "name": "FONT_SWATCH_BEATS_46",
+                "name": "FONT_SWATCH_BEATS_47",
+                "type": "font"
+            },
+            {
+                "characterRegex": "[0-9/ADFJMNOSabceglnoprtuvy]",
+                "file": "fonts/DroidSans.ttf",
+                "name": "FONT_ISO_DATE_23",
                 "type": "font"
             },
             {
                 "characterRegex": "[0-9:]",
                 "file": "fonts/DroidSans.ttf",
-                "name": "FONT_ISO_TIME_31",
-                "type": "font"
-            },
-            {
-                "characterRegex": "[0-9-]",
-                "file": "fonts/DroidSans.ttf",
-                "name": "FONT_ISO_DATE_23",
+                "name": "FONT_ISO_TIME_32",
                 "type": "font"
             }
         ]
