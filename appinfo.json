@@ -31,7 +31,7 @@
                 "type": "font"
             },
             {
-                "characterRegex": "[0-9:]",
+                "characterRegex": "[0-9:apm]",
                 "file": "fonts/IosevkaSS13-Light.ttf",
                 "name": "FONT_ISO_TIME_32",
                 "type": "font"
