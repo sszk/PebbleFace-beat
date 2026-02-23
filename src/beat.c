@@ -18,6 +18,7 @@ static Layer *     background_layer;
 static TextLayer * text_date_layer;
 static TextLayer * text_time_layer;
 static TextLayer * text_beat_layer;
+static TextLayer * text_step_layer;
 
 #define BACKGROUND_COLOR GColorBlack
 #define FOREGROUND_COLOR GColorWhite
@@ -55,11 +56,17 @@ static TextLayer * text_beat_layer;
 #define ISO_DATE_RECT  GRect(ISO_HPADDING + ISO_HPADDING + 2, ISO_DATE_TOP, ISO_TEXT_WIDTH, ISO_DATE_HEIGHT)
 #define ISO_TIME_RECT  GRect(ISO_HPADDING + ISO_HPADDING + 2, ISO_TIME_TOP, ISO_TEXT_WIDTH, ISO_TIME_HEIGHT)
 
-#define BEAT_TOP    90
+#define BEAT_TOP    70
 #define BEAT_LEFT   4
 #define BEAT_HEIGHT 64
 #define BEAT_WIDTH  (144 - BEAT_LEFT)
 #define BEAT_RECT   GRect(BEAT_LEFT, BEAT_TOP, BEAT_WIDTH, BEAT_HEIGHT)
+
+#define STEP_TOP      130
+#define STEP_HPADDING 2
+#define STEP_WIDTH    (144 - 2 * STEP_HPADDING)
+#define STEP_HEIGHT   24
+#define STEP_RECT     GRect(STEP_HPADDING, STEP_TOP, STEP_WIDTH, STEP_HEIGHT)
 
 #define RTOP(rect)    (rect.origin.y)
 #define RBOTTOM(rect) (rect.origin.y + rect.size.h)
@@ -119,9 +126,9 @@ time_t calc_unix_seconds(struct tm * tick_time)
 	return days_since_epoch * 86400 + tick_time->tm_hour * 3600 + tick_time->tm_min * 60 + tick_time->tm_sec;
 }
 
-time_t calc_swatch_beats(time_t unix_seconds)
+uint16_t calc_swatch_beats(time_t unix_seconds)
 {
-	return (((unix_seconds + 3600) % 86400) * 1000) / 86400;
+	return ((((unsigned) unix_seconds + 3600U) % 86400U) * 1000U) / 86400U;
 }
 
 void display_time(struct tm * tick_time)
@@ -130,6 +137,7 @@ void display_time(struct tm * tick_time)
 	static char date_text[] = "MMM/99";
 	static char time_text[] = "99:99:99";
 	static char beat_text[] = "@999";
+	static char step_text[] = "000000 STEPS";
 
 	time_t unix_seconds;
 
@@ -142,9 +150,9 @@ void display_time(struct tm * tick_time)
 	// Time.
 
 	strftime(time_text, sizeof(time_text), "%H:%M:%S", tick_time);
-	if (time_text[0] == ' ') {
-		time_text[0] = '0';
-	}
+	// if (time_text[0] == ' ') {
+	// 	time_text[0] = '0';
+	// }
 	text_layer_set_text(text_time_layer, time_text);
 
 	// Unix timestamp.
@@ -153,21 +161,26 @@ void display_time(struct tm * tick_time)
 
 	// Swatch .beats.
 
-	snprintf(beat_text, sizeof(beat_text), "@%0ld", calc_swatch_beats(unix_seconds));
-	if (beat_text[3] == '\0') {
-		beat_text[4] = '\0';
-		beat_text[3] = beat_text[2];
-		beat_text[2] = beat_text[1];
-		beat_text[1] = '0';
-	} else if (beat_text[2] == '\0') {
-		beat_text[4] = '\0';
-		beat_text[3] = beat_text[1];
-		beat_text[2] = '\0';
-		beat_text[1] = '0';
-	} else {
-		// do nothing
-	}
+	snprintf(beat_text, sizeof(beat_text), "@%03d", calc_swatch_beats(unix_seconds));
+	// if (beat_text[3] == '\0') {
+	// 	beat_text[4] = '\0';
+	// 	beat_text[3] = beat_text[2];
+	// 	beat_text[2] = beat_text[1];
+	// 	beat_text[1] = '0';
+	// } else if (beat_text[2] == '\0') {
+	// 	beat_text[4] = '\0';
+	// 	beat_text[3] = beat_text[1];
+	// 	beat_text[2] = '\0';
+	// 	beat_text[1] = '0';
+	// } else {
+	// 	// do nothing
+	// }
 	text_layer_set_text(text_beat_layer, beat_text);
+
+	// Steps
+	uint16_t steps = health_service_sum_today(HealthMetricStepCount);
+	snprintf(step_text, sizeof(step_text), "%5d STEPS", steps);
+	text_layer_set_text(text_step_layer, step_text);
 }
 
 TextLayer * init_text_layer(GRect rect, GTextAlignment align, uint32_t font_res_id)
@@ -275,6 +288,7 @@ static void window_load(Window * window)
 	text_date_layer = init_text_layer(ISO_DATE_RECT, GTextAlignmentCenter, RESOURCE_ID_FONT_ISO_DATE_23);
 	text_time_layer = init_text_layer(ISO_TIME_RECT, GTextAlignmentCenter, RESOURCE_ID_FONT_ISO_TIME_32);
 	text_beat_layer = init_text_layer(BEAT_RECT, GTextAlignmentLeft, RESOURCE_ID_FONT_SWATCH_BEATS_47);
+	text_step_layer = init_text_layer(STEP_RECT, GTextAlignmentCenter, RESOURCE_ID_FONT_STEP_18);
 
 	get_stored_timezone();
 	time_t now = time(NULL);
@@ -287,6 +301,7 @@ static void window_unload(Window * window)
 	bluetooth_connection_service_unsubscribe();
 	battery_state_service_unsubscribe();
 	tick_timer_service_unsubscribe();
+	text_layer_destroy(text_step_layer);
 	text_layer_destroy(text_beat_layer);
 	text_layer_destroy(text_time_layer);
 	text_layer_destroy(text_date_layer);

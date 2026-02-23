@@ -8,6 +8,8 @@
     "companyName": "shin@wolverion.com",
     "longName": ".beat",
     "projectType": "native",
+    "sdkVersion": "3",
+    "enableMultiJS": true,
     "resources": {
         "media": [
             {
@@ -24,14 +26,20 @@
             },
             {
                 "characterRegex": "[0-9/ADFJMNOSabceglnoprtuvy]",
-                "file": "fonts/DroidSans.ttf",
+                "file": "fonts/IosevkaSS13-Heavy.ttf",
                 "name": "FONT_ISO_DATE_23",
                 "type": "font"
             },
             {
                 "characterRegex": "[0-9:]",
-                "file": "fonts/DroidSans.ttf",
+                "file": "fonts/IosevkaSS13-Light.ttf",
                 "name": "FONT_ISO_TIME_32",
+                "type": "font"
+            },
+            {
+                "characterRegex": "[0-9 STEP]",
+                "file": "fonts/IosevkaSS13-Light.ttf",
+                "name": "FONT_STEP_18",
                 "type": "font"
             }
         ]
