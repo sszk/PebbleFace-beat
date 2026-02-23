@@ -11,7 +11,7 @@
     "resources": {
         "media": [
             {
-                "file": "images/beat.png",
+                "file": "images/beat-icon.png",
                 "menuIcon": true,
                 "name": "ICON_IMAGE",
                 "type": "png"

@@ -1,0 +1,21 @@
+{
+    "files.associations": {
+        "weather.h": "c"
+    },
+    "C_Cpp.default.includePath": [
+        "${userHome}/Library/Application Support/Pebble SDK/SDKs/4.9.77/sdk-core/pebble/aplite/include",
+        "${userHome}/Library/Application Support/Pebble SDK/SDKs/4.9.77/sdk-core/pebble/basalt/include",
+        "${userHome}/Library/Application Support/Pebble SDK/SDKs/4.9.77/sdk-core/pebble/chalk/include",
+        "${userHome}/Library/Application Support/Pebble SDK/SDKs/4.9.77/sdk-core/pebble/diorite/include",
+        "${userHome}/Library/Application Support/Pebble SDK/SDKs/4.9.77/sdk-core/pebble/emery/include",
+        "${userHome}/Library/Application Support/Pebble SDK/SDKs/4.9.77/sdk-core/pebble/flint/include"
+    ],
+    "clangd.fallbackFlags": [
+        "-I${env:HOME}/Library/Application Support/Pebble SDK/SDKs/4.9.77/sdk-core/pebble/aplite/include",
+        "-I${env:HOME}/Library/Application Support/Pebble SDK/SDKs/4.9.77/sdk-core/pebble/basalt/include",
+        "-I${env:HOME}/Library/Application Support/Pebble SDK/SDKs/4.9.77/sdk-core/pebble/chalk/include",
+        "-I${env:HOME}/Library/Application Support/Pebble SDK/SDKs/4.9.77/sdk-core/pebble/diorite/include",
+        "-I${env:HOME}/Library/Application Support/Pebble SDK/SDKs/4.9.77/sdk-core/pebble/emery/include",
+        "-I${env:HOME}/Library/Application Support/Pebble SDK/SDKs/4.9.77/sdk-core/pebble/flint/include"
+    ]
+}
