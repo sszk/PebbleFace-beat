@@ -137,6 +137,11 @@ void display_time(const struct tm * tick_time)
 
 	strcpy(date_text, month[tick_time->tm_mon]);
 	strftime(date_text + 3, sizeof(date_text) - 3, "/%d", tick_time);
+	// Suppress preceding zero if the date has only one digit
+	if (date_text[4] == '0') {
+		date_text[4] = date_text[5];
+		date_text[5] = '\0';
+	}
 	text_layer_set_text(text_date_layer, date_text);
 
 	// Time.
