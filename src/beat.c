@@ -88,9 +88,9 @@ static const char month[12][4] = {
 	"Dec"
 };
 
-void set_timezone_offset(const char tz_offset[])
+static void set_timezone_offset(const char tz_offset[])
 {
-	strncpy(utc_offset_str, tz_offset, sizeof(utc_offset_str));
+	snprintf(utc_offset_str, sizeof(utc_offset_str), "%s", tz_offset);
 
 	const int hour = (INT_FROM_DIGIT(tz_offset[1]) * 10) + INT_FROM_DIGIT(tz_offset[2]);
 	const int min  = (INT_FROM_DIGIT(tz_offset[3]) * 10) + INT_FROM_DIGIT(tz_offset[4]);
@@ -101,12 +101,13 @@ void set_timezone_offset(const char tz_offset[])
 	}
 }
 
-void update_background_callback(Layer * layer, GContext * gctx)
+static void update_background_callback(Layer * layer, GContext * gctx)
 {
 	(void) layer;
+	(void) gctx;
 }
 
-time_t calc_unix_seconds(const struct tm * tick_time)
+static time_t calc_unix_seconds(const struct tm * tick_time)
 {
 	// This function is necessary because mktime() doesn't work (probably
 	// because there's no native timezone support) and just calling time()
@@ -120,12 +121,12 @@ time_t calc_unix_seconds(const struct tm * tick_time)
 	return days_since_epoch * 86400 + tick_time->tm_hour * 3600 + tick_time->tm_min * 60 + tick_time->tm_sec;
 }
 
-uint16_t calc_swatch_beats(time_t unix_seconds)
+static uint16_t calc_swatch_beats(time_t unix_seconds)
 {
 	return ((((unsigned) unix_seconds + 3600U) % 86400U) * 1000U) / 86400U;
 }
 
-void display_time(const struct tm * tick_time)
+static void display_time(const struct tm * tick_time)
 {
 	// Static, because we pass them to the system.
 	static char date_text[] = "MMM/99";
@@ -136,19 +137,31 @@ void display_time(const struct tm * tick_time)
 	// Date.
 
 	strcpy(date_text, month[tick_time->tm_mon]);
-	strftime(date_text + 3, sizeof(date_text) - 3, "/%d", tick_time);
-	// Suppress preceding zero if the date has only one digit
-	if (date_text[4] == '0') {
-		date_text[4] = date_text[5];
+	date_text[3] = '/';
+	if (tick_time->tm_mday >= 10) {
+		date_text[4] = '0' + (tick_time->tm_mday / 10);
+		date_text[5] = '0' + (tick_time->tm_mday % 10);
+		date_text[6] = '\0';
+	} else {
+		date_text[4] = '0' + tick_time->tm_mday;
 		date_text[5] = '\0';
 	}
 	text_layer_set_text(text_date_layer, date_text);
 
 	// Time.
 
-	const int hour_12 = (tick_time->tm_hour % 12 == 0) ? 12 : (tick_time->tm_hour % 12);
-	const char * const am_pm = (tick_time->tm_hour >= 12) ? "pm" : "am";
-	snprintf(time_text, sizeof(time_text), "%d:%02d%s", hour_12, tick_time->tm_min, am_pm);
+	const int          hour_12 = (tick_time->tm_hour % 12 == 0) ? 12 : (tick_time->tm_hour % 12);
+	const char * const am_pm   = (tick_time->tm_hour >= 12) ? "pm" : "am";
+
+	time_text[0] = (hour_12 >= 10) ? '1' : '0' + hour_12;
+	time_text[1] = (hour_12 >= 10) ? '0' + (hour_12 % 10) : ':';
+	time_text[2] = (hour_12 >= 10) ? ':' : '0' + (tick_time->tm_min / 10);
+	time_text[3] = (hour_12 >= 10) ? '0' + (tick_time->tm_min / 10) : '0' + (tick_time->tm_min % 10);
+	time_text[4] = (hour_12 >= 10) ? '0' + (tick_time->tm_min % 10) : am_pm[0];
+	time_text[5] = (hour_12 >= 10) ? am_pm[0] : am_pm[1];
+	time_text[6] = (hour_12 >= 10) ? am_pm[1] : '\0';
+	time_text[7] = '\0';
+
 	text_layer_set_text(text_time_layer, time_text);
 
 	// Unix timestamp.
@@ -157,29 +170,32 @@ void display_time(const struct tm * tick_time)
 
 	// Swatch .beats.
 
-	snprintf(beat_text, sizeof(beat_text), "@%03d", calc_swatch_beats(unix_seconds));
+	snprintf(beat_text, sizeof(beat_text), "@%03u", (unsigned int) calc_swatch_beats(unix_seconds));
 	text_layer_set_text(text_beat_layer, beat_text);
 
 	// Steps
 	const uint16_t steps = health_service_sum_today(HealthMetricStepCount);
-	snprintf(step_text, sizeof(step_text), "%d STEPS", steps);
+	snprintf(step_text, sizeof(step_text), "%u STEPS", (unsigned int) steps);
 	text_layer_set_text(text_step_layer, step_text);
 }
 
-TextLayer * init_text_layer(const GRect rect, const GTextAlignment align, const uint32_t font_res_id)
+static TextLayer * init_text_layer(const GRect rect, const GTextAlignment align, const uint32_t font_res_id)
 {
 	TextLayer * const layer = text_layer_create(rect);
+
 	text_layer_set_text_color(layer, TEXT_FG_COLOR);
 	text_layer_set_background_color(layer, TEXT_BG_COLOR);
 	text_layer_set_text_alignment(layer, align);
 	text_layer_set_font(layer, fonts_load_custom_font(resource_get_handle(font_res_id)));
 	layer_add_child(window_get_root_layer(window), text_layer_get_layer(layer));
+
 	return layer;
 }
 
 static void store_timezone()
 {
 	const int result = persist_write_string(1, utc_offset_str);
+
 	if (result < 0) {
 		APP_LOG(APP_LOG_LEVEL_WARNING, "Storing timezone failed: %d", result);
 	} else {
@@ -223,9 +239,15 @@ static void request_timezone(void)
 	app_message_outbox_send();
 }
 
-void in_received_handler(DictionaryIterator * received, void * context)
+static void in_received_handler(DictionaryIterator * received, void * context)
 {
+	(void) context;
 	const Tuple * utc_offset_tuple = dict_find(received, BEAPOCH_KEY_UTC_OFFSET);
+
+	if (utc_offset_tuple == NULL) {
+		APP_LOG(APP_LOG_LEVEL_WARNING, "Received timezone payload was empty");
+		return;
+	}
 
 	APP_LOG(APP_LOG_LEVEL_DEBUG, "Received timezone: %s", utc_offset_tuple->value->cstring);
 
@@ -238,18 +260,25 @@ void in_received_handler(DictionaryIterator * received, void * context)
 	}
 }
 
-void in_dropped_handler(AppMessageResult reason, void * context)
+static void in_dropped_handler(AppMessageResult reason, void * context)
 {
-	APP_LOG(APP_LOG_LEVEL_DEBUG, "App Message Dropped! (%u)", reason);
+	(void) context;
+
+	APP_LOG(APP_LOG_LEVEL_DEBUG, "App Message Dropped! (%d)", (int) reason);
 }
 
-void out_failed_handler(DictionaryIterator * failed, AppMessageResult reason, void * context)
+static void out_failed_handler(DictionaryIterator * failed, AppMessageResult reason, void * context)
 {
-	APP_LOG(APP_LOG_LEVEL_DEBUG, "App Message Send Failed! (%u)", reason);
+	(void) failed;
+	(void) context;
+
+	APP_LOG(APP_LOG_LEVEL_DEBUG, "App Message Send Failed! (%d)", (int) reason);
 }
 
 static void handle_second_tick(struct tm * tick_time, TimeUnits units_changed)
 {
+	(void) units_changed;
+
 	if (request_timezone_tries_left) {
 		// If we don't already have a UTC offset, ask the phone for one.
 		request_timezone();
@@ -279,6 +308,8 @@ static void window_load(Window * window)
 
 static void window_unload(Window * window)
 {
+	(void) window;
+
 	bluetooth_connection_service_unsubscribe();
 	battery_state_service_unsubscribe();
 	tick_timer_service_unsubscribe();
